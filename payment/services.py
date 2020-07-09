@@ -1,9 +1,11 @@
 import requests
 from flask import redirect, render_template
 
+from app import app
 from app.config import SHOP_ID, PAYWAY
 from payment.utils import generate_sign
 
+logger = app.logger
 
 class PaymentServices:
 
@@ -24,6 +26,7 @@ class PaymentServices:
         pay_data['sign'] = sign
         pay_data['description'] = self.description
         pay_data['url'] = 'https://pay.piastrix.com/ru/pay'
+        logger.info(f'Piastrix pay data: {pay_data}')
         return pay_data
 
     def bill(self):
@@ -38,15 +41,18 @@ class PaymentServices:
 
         sign = generate_sign(data)
         data['sign'] = sign
+        logger.info(f"Request for piastrix bill: {data}")
 
         response = requests.post(url, json=data)
         response = response.json()
 
         if response['result']:
+            logger.info(f"Piastrix bill response: {response}")
             url_for_redirect = response['data']['url']
             return url_for_redirect
 
         else:
+            logger.error(f'Error response during piastrix bill: {response}')
             print('Bad request for bill')
 
     def invoice(self):
@@ -58,11 +64,16 @@ class PaymentServices:
             "shop_id": SHOP_ID,
             "shop_order_id": self.shop_order_id,
         }
+
         sign = generate_sign(data)
         data['sign'] = sign
+        logger.info(f"Request for piastrix invoice: {data}")
+
         response = requests.post(url, json=data)
         response = response.json()
+
         if response['result']:
+            logger.info(f"Piastrix invoice response: {response}")
             invoice_data = {
                 "url": response['data']['url'],
                 "lang": "ru",
@@ -72,8 +83,10 @@ class PaymentServices:
                 "referer": response['data']['data']['referer'],
                 "method": response['data']['method'],
             }
+            logger.info(f'Piastrix invoice data: {invoice_data}')
             return invoice_data
         else:
+            logger.info(f'Error response during piastrix invoice: {response}')
             print('Bad request for bill')
 
 def get_piastrix_service(amount, currency, description, shop_order_id):
