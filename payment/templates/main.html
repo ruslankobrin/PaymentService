@@ -1,16 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
+    <div class="container">
         <form method=post>
             {{ form.csrf_token }}
-            {{ form.amount.label }}
-            {{ form.amount }}
-            <hr />
-            {{ form.currency.label }}
-            {{ form.currency }}
-            <hr />
-            {{ form.description.label }}
-            {{ form.description }}
-            <hr />
-            <input type="submit" value="Submit">
+            <label>{{ form.amount.label }}</label>
+            {{ form.amount(class="form-control") }}
+            <label>{{ form.currency.label }}</label>
+            {{ form.currency(class="form-control")  }}
+            <label>{{ form.description.label }}</label>
+            {{ form.description(class="form-control")  }}
+            <input type="submit" value="Submit" class="btn btn-primary">
         </form>
+    </div>
 {% endblock %}
